@@ -14,8 +14,8 @@ namespace CharaAnime
     public class CharaAnime : BaseUnityPlugin
     {
         public const string GUID = "Countd360.CharaAnime.HS2";
-        public const string Name = "Chara Anime";
-        public const string Version = "1.0.0";
+        public const string Name = "CharaAnime";
+        public const string Version = "1.2.0";
 
         public static CharaAnime Instance { get; private set; }
         internal static new ManualLogSource Logger;

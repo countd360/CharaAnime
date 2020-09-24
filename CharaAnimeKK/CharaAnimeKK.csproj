@@ -41,6 +41,9 @@
     <Compile Include="..\CharaAnime\Core\CharaPoseController.cs">
       <Link>Core\CharaPoseController.cs</Link>
     </Compile>
+    <Compile Include="..\CharaAnime\Core\MemoryInfo.cs">
+      <Link>Core\MemoryInfo.cs</Link>
+    </Compile>
     <Compile Include="..\CharaAnime\GUI\Gizmos.cs">
       <Link>GUI\Gizmos.cs</Link>
     </Compile>
@@ -68,7 +71,9 @@
     <Reference Include="KKAPI">
       <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\BepInEx\plugins\KKAPI.dll</HintPath>
     </Reference>
-    <Reference Include="System" />
+    <Reference Include="System">
+      <Private>True</Private>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\CharaStudio_Data\Managed\UnityEngine.dll</HintPath>
     </Reference>

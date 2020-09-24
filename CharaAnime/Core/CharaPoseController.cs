@@ -315,5 +315,77 @@ namespace CharaAnime
                 }
             }
         }
+
+#if false
+#region GC_Suspend_Patch
+
+        public static bool SuspendGC { get; set; }
+
+        private static bool JudgeGCRequest()
+        {
+            return true;
+        }
+
+        [HarmonyPatch(typeof(GC), "InternalCollect")]
+        private static class GCCollect_patch0
+        {
+            public static bool Prefix()
+            {
+                CharaAnime.Logger.LogDebug($"GC.InternalCollect() triggered, suspend request = {SuspendGC}");
+                return JudgeGCRequest();
+            }
+        }
+
+        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[0])]
+        private static class GCCollect_patch1
+        {
+            public static bool Prefix()
+            {
+                CharaAnime.Logger.LogDebug($"GC.Collect() triggered, suspend request = {SuspendGC}");
+                return JudgeGCRequest();
+            }
+        }
+
+        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[] { typeof(Int32) })]
+        private static class GCCollect_patch2
+        {
+            public static bool Prefix()
+            {
+                CharaAnime.Logger.LogDebug($"GC.Collect(Int32) triggered, suspend request = {SuspendGC}");
+                return JudgeGCRequest();
+            }
+        }
+
+        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[] { typeof(Int32), typeof(GCCollectionMode) })]
+        private static class GCCollect_patch3
+        {
+            public static bool Prefix()
+            {
+                CharaAnime.Logger.LogDebug($"GC.Collect(Int32, GCCollectionMode) triggered, suspend request = {SuspendGC}");
+                return JudgeGCRequest();
+            }
+        }
+
+        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[] { typeof(Int32), typeof(GCCollectionMode), typeof(Boolean) })]
+        private static class GCCollect_patch4
+        {
+            public static bool Prefix()
+            {
+                CharaAnime.Logger.LogDebug($"GC.Collect(Int32, GCCollectionMode, Boolean) triggered, suspend request = {SuspendGC}");
+                return JudgeGCRequest();
+            }
+        }
+
+        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[] { typeof(Int32), typeof(GCCollectionMode), typeof(Boolean), typeof(Boolean) })]
+        private static class GCCollect_patch5
+        {
+            public static bool Prefix()
+            {
+                CharaAnime.Logger.LogDebug($"GC.Collect(Int32, GCCollectionMode, Boolean, Boolean) triggered, suspend request = {SuspendGC}");
+                return JudgeGCRequest();
+            }
+        }
+#endregion
+#endif
     }
 }
