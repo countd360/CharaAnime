@@ -15,7 +15,7 @@ namespace CharaAnime
     {
         public const string GUID = "Countd360.CharaAnime.HS2";
         public const string Name = "CharaAnime";
-        public const string Version = "1.2.0";
+        public const string Version = "1.3.0";
 
         public static CharaAnime Instance { get; private set; }
         internal static new ManualLogSource Logger;
@@ -57,9 +57,8 @@ namespace CharaAnime
             Object.DontDestroyOnLoad(gameObject);
             CharaAnimeMgr.Install(gameObject);
 
-            // Patch
             Harmony harmony = new Harmony(GUID);
-            harmony.PatchAll(Assembly.GetExecutingAssembly());
+            CharaAnimeMgr.HarmonyInstance = harmony;
         }
 
     }

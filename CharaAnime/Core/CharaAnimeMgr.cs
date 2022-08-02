@@ -1,4 +1,5 @@
-﻿using KKAPI.Studio;
+﻿using HarmonyLib;
+using KKAPI.Studio;
 using Studio;
 using System.Collections;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace CharaAnime
         public MainGUI gui;
         public Dictionary<ObjectCtrlInfo, CharaPoseController> ociPoseCtrlDic;
 
+        public static Harmony HarmonyInstance { get; set; }
         public static CharaAnimeMgr Instance { get; private set; }
 
         public static CharaAnimeMgr Install(GameObject container)

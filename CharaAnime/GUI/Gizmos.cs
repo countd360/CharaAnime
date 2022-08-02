@@ -17,6 +17,9 @@ namespace CharaAnime
             _cameraEventsDispatcher = Camera.main.gameObject.AddComponent<CameraEventsDispatcher>();
             _cameraEventsDispatcher.onPreRender += UpdateAllGizmos;
             Console.WriteLine("CharaAnime GizmosManager started.");
+#if STUDIO_KKS
+            VectorLine.SetEndCap("vector", EndCap.Back, 0, new Texture2D[] { Texture2D.whiteTexture, Texture2D.whiteTexture});
+#endif
         }
 
         private void UpdateAllGizmos()

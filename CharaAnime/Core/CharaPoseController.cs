@@ -1,5 +1,5 @@
-﻿using HarmonyLib;
-using RootMotion.FinalIK;
+﻿using BepInEx.Bootstrap;
+using HarmonyLib;
 using Studio;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace CharaAnime
 {
-    class CharaPoseController : MonoBehaviour
+    public class CharaPoseController : MonoBehaviour
     {
         private ObjectCtrlInfo ociTarget;
         private CharaAnimeMgr manager;
@@ -33,12 +33,200 @@ namespace CharaAnime
         public Dictionary<GameObject, Vector3> BoneSclModifier;
         public List<SyncSetting> BoneSync;
 
+#if STUDIO_HS2 || STUDIO_AI
+        // heelz 
+        public enum HeelzPluginType
+        {
+            UNKNOWN = 0,
+            HEELZ_14,
+            HEELZ_15,
+            UNSUPPORT,
+            NOTFOUND,
+        }
+
+        public static bool HasHeelzPlugin { get; private set; }
+        public static string HeelzPluginInfo { get; private set; }
+        private static HeelzPluginType heelzPluginType = HeelzPluginType.UNKNOWN;
+        public bool EnableHeelzUpdate { get; set; }
+        public object heelsCtrl;
+
+        public static void Foo()
+        {
+            Console.WriteLine("Foo10");
+        }
+
+        public static void DetectHeelzController()
+        {
+            // init only once
+            if (heelzPluginType != HeelzPluginType.UNKNOWN)
+            {
+                return;
+            }
+            // search for 
+            string heelzPluginName = null;
+            string heelzPluginGuid = null;
+            Version heelzPluginVer = null;
+            Console.WriteLine("CharaPoseController search for heelz plugins...");
+            foreach (var pname in Chainloader.PluginInfos.Keys)
+            {
+                if (pname.ToLower().Contains("heelz") || Chainloader.PluginInfos[pname].Metadata.Name.Contains("heelz"))
+                {
+                    var pinfo = Chainloader.PluginInfos[pname];
+                    heelzPluginName = pinfo.Metadata.Name;
+                    heelzPluginGuid = pinfo.Metadata.GUID;
+                    heelzPluginVer = pinfo.Metadata.Version;
+                    Console.WriteLine("  Found {0}, {1}, {2}!", heelzPluginName, heelzPluginGuid, heelzPluginVer);
+                    break;
+                }
+            }
+            if (string.IsNullOrEmpty(heelzPluginName) || heelzPluginVer == null)
+            {
+                Console.WriteLine("  No heelz plugin found!");
+                HasHeelzPlugin = false;
+                HeelzPluginInfo = "Heelz Plugin not found";
+                heelzPluginType = HeelzPluginType.NOTFOUND;
+                return;
+            }
+            else if (heelzPluginName.Equals("Heelz"))
+            {
+                if (heelzPluginVer.CompareTo(new Version(1, 14, 3)) == 0)
+                {
+                    PatchHeelz14();
+
+                    HasHeelzPlugin = true;
+                    HeelzPluginInfo = "Found supported plugin: Heelz 1.14.3 by Hooh";
+                    heelzPluginType = HeelzPluginType.HEELZ_14;
+                    return;
+                }
+            }
+            else if (heelzPluginName.Equals("HS2Heelz"))
+            {
+                if (heelzPluginVer.CompareTo(new Version(1, 15, 3)) >= 0)
+                {
+                    HasHeelzPlugin = true;
+                    HeelzPluginInfo = string.Format("Found supported plugin: Heelz {0} by Animal42069", heelzPluginVer.ToString());
+                    heelzPluginType = HeelzPluginType.HEELZ_15;
+                    return;
+                }
+            }
+            // not supported
+            HasHeelzPlugin = false;
+            HeelzPluginInfo = string.Format("Found not-supported plugin: Name = {0}, GUID = {1}, Version = {2}", heelzPluginName, heelzPluginGuid, heelzPluginVer.ToString());
+            heelzPluginType = HeelzPluginType.UNSUPPORT;
+        }
+
+        public static void PatchHeelz14()
+        {
+            try
+            {
+                // install patch
+                Console.WriteLine("Patching Heelz 1.14.3 ...");
+                CharaAnimeMgr.HarmonyInstance.PatchAll(typeof(Heelz14_Patch));
+                Console.WriteLine("  ... Done.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fail to patch Heelz: " + ex.Message);
+            }
+
+        }
+
+        public void InitializeHeelzController()
+        {
+            DetectHeelzController();
+            heelsCtrl = null;
+
+            if (heelzPluginType == HeelzPluginType.HEELZ_14)
+            {
+                EnableHeelzUpdate = InitializeHeelzController14();
+            }
+            else if (heelzPluginType == HeelzPluginType.HEELZ_15)
+            {
+                EnableHeelzUpdate = false;
+            }
+            else
+            {
+                EnableHeelzUpdate = false;
+            }
+        }
+
+        public bool InitializeHeelzController14()
+        {
+            try
+            {
+                Heelz14_Patch.caMgr = CharaAnimeMgr.Instance;
+                heelsCtrl = (ociTarget as OCIChar).charInfo.gameObject.GetComponent<HeelsController>();
+            }
+            catch (Exception)
+            {
+                heelsCtrl = null;
+            }
+            return heelsCtrl != null;
+        }
+
+        public void HeelzUpdate()
+        {
+            if (heelzPluginType == HeelzPluginType.HEELZ_14)
+            {
+                HeelzUpdate14();
+            }
+            else if (heelzPluginType == HeelzPluginType.HEELZ_15)
+            {
+
+            }
+            else
+            {
+
+            }
+        }
+
+        public void HeelzUpdate14()
+        {
+            if (EnableHeelzUpdate && heelsCtrl != null)
+            {
+                Heelz14_Patch.allowHeelzUpdate = true;
+                (heelsCtrl as HeelsController)?.IKArray();
+                Heelz14_Patch.allowHeelzUpdate = false;
+            }
+        }
+
+        // heelz patch
+        private class Heelz14_Patch
+        {
+            public static bool allowHeelzUpdate = false;
+            public static CharaAnimeMgr caMgr;
+ 
+            [HarmonyPatch(typeof(HeelsController), "IKArray")]
+            [HarmonyPrefix]
+            public static bool Prefix(HeelsController __instance)
+            {
+                foreach (CharaPoseController pc in caMgr.ociPoseCtrlDic.Values)
+                {
+                    if (pc.heelsCtrl != null && pc.heelsCtrl.Equals(__instance))
+                    {
+                        // this char has CharPoseController for it, depend on allowHeelzUpdate flag 
+                        return allowHeelzUpdate && pc.EnableHeelzUpdate;
+                    }
+                }
+
+                //Console.WriteLine("IKArray of HeelsController called");
+                return true;
+            }
+        }
+
+#endif
+
         public static CharaPoseController Install(GameObject container, ObjectCtrlInfo target)
         {
             CharaPoseController newCtrl = container.AddComponent<CharaPoseController>();
             newCtrl.ociTarget = target;
             newCtrl.manager = CharaAnimeMgr.Instance;
             newCtrl.manager.RegistPoseController(target, newCtrl);
+
+#if STUDIO_HS2 || STUDIO_AI
+            // init heelz controller
+            newCtrl.InitializeHeelzController();
+#endif
             return newCtrl;
         }
 
@@ -120,7 +308,6 @@ namespace CharaAnime
             BoneRotModifier = new Dictionary<GameObject, Quaternion>();
             BoneSclModifier = new Dictionary<GameObject, Vector3>();
             BoneSync = new List<SyncSetting>();
-            //IKExecutionOrder_Patches.onPostLateUpdate += DoBoneSync;
         }
 
         private void Start()
@@ -132,6 +319,21 @@ namespace CharaAnime
         private void LateUpdate()
         {
             DoBoneSync();
+
+#if STUDIO_HS2 || STUDIO_AI
+            // heelz update
+            HeelzUpdate();
+#endif
+        }
+
+        public void ObiUpdate()
+        {
+            DoBoneSync(true);
+
+#if STUDIO_HS2 || STUDIO_AI
+            // heelz update
+            HeelzUpdate();
+#endif
         }
 
         private void OnDestroy()
@@ -140,9 +342,9 @@ namespace CharaAnime
             Initialized = false;
             Enable = false;
             manager.RemovePoseController(ociTarget);
-            //IKExecutionOrder_Patches.onPostLateUpdate -= DoBoneSync;
         }
 
+        public Action PostBoneSync = null;
         public void DoBoneSync(bool fouceUpdate = false)
         {
             if (!Enable && !fouceUpdate)
@@ -180,24 +382,9 @@ namespace CharaAnime
                 }
                 sclPair.Key.transform.localScale = sclPair.Value;
             }
+            // post process
+            PostBoneSync?.Invoke();
             //Console.WriteLine("DoBoneSync {0}: Pos = {1}, Rot = {2}, Scl = {3}", ociTarget.treeNodeObject.textName, BonePosModifier.Count, BoneRotModifier.Count, BoneSclModifier.Count);
-        }
-
-
-
-        [HarmonyPatch(typeof(IKExecutionOrder), "LateUpdate")]
-        private class IKExecutionOrder_Patches
-        {
-            public static event Action onPostLateUpdate;
-            
-            //public static void Prefix()
-            public static void Postfix()
-            {
-                if (CharaPoseController.IKExecutionOrder_Patches.onPostLateUpdate != null)
-                {
-                    CharaPoseController.IKExecutionOrder_Patches.onPostLateUpdate();
-                }
-            }
         }
 
         public class SyncSetting
@@ -317,75 +504,22 @@ namespace CharaAnime
         }
 
 #if false
-#region GC_Suspend_Patch
-
-        public static bool SuspendGC { get; set; }
-
-        private static bool JudgeGCRequest()
+        [HarmonyPatch(typeof(IKExecutionOrder), "LateUpdate")]
+        private class IKExecutionOrder_Patches
         {
-            return true;
-        }
+            public static event Action onPostLateUpdate;
 
-        [HarmonyPatch(typeof(GC), "InternalCollect")]
-        private static class GCCollect_patch0
-        {
-            public static bool Prefix()
+            //public static void Prefix()
+            public static void Postfix()
             {
-                CharaAnime.Logger.LogDebug($"GC.InternalCollect() triggered, suspend request = {SuspendGC}");
-                return JudgeGCRequest();
+                if (CharaPoseController.IKExecutionOrder_Patches.onPostLateUpdate != null)
+                {
+                    CharaPoseController.IKExecutionOrder_Patches.onPostLateUpdate();
+                }
             }
         }
-
-        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[0])]
-        private static class GCCollect_patch1
-        {
-            public static bool Prefix()
-            {
-                CharaAnime.Logger.LogDebug($"GC.Collect() triggered, suspend request = {SuspendGC}");
-                return JudgeGCRequest();
-            }
-        }
-
-        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[] { typeof(Int32) })]
-        private static class GCCollect_patch2
-        {
-            public static bool Prefix()
-            {
-                CharaAnime.Logger.LogDebug($"GC.Collect(Int32) triggered, suspend request = {SuspendGC}");
-                return JudgeGCRequest();
-            }
-        }
-
-        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[] { typeof(Int32), typeof(GCCollectionMode) })]
-        private static class GCCollect_patch3
-        {
-            public static bool Prefix()
-            {
-                CharaAnime.Logger.LogDebug($"GC.Collect(Int32, GCCollectionMode) triggered, suspend request = {SuspendGC}");
-                return JudgeGCRequest();
-            }
-        }
-
-        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[] { typeof(Int32), typeof(GCCollectionMode), typeof(Boolean) })]
-        private static class GCCollect_patch4
-        {
-            public static bool Prefix()
-            {
-                CharaAnime.Logger.LogDebug($"GC.Collect(Int32, GCCollectionMode, Boolean) triggered, suspend request = {SuspendGC}");
-                return JudgeGCRequest();
-            }
-        }
-
-        [HarmonyPatch(typeof(GC), nameof(GC.Collect), new Type[] { typeof(Int32), typeof(GCCollectionMode), typeof(Boolean), typeof(Boolean) })]
-        private static class GCCollect_patch5
-        {
-            public static bool Prefix()
-            {
-                CharaAnime.Logger.LogDebug($"GC.Collect(Int32, GCCollectionMode, Boolean, Boolean) triggered, suspend request = {SuspendGC}");
-                return JudgeGCRequest();
-            }
-        }
-#endregion
 #endif
     }
+
+
 }

@@ -19,7 +19,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;STUDIO_KK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -55,33 +55,33 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
-      <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\BepInEx\core\0Harmony.dll</HintPath>
+      <HintPath>..\..\KK_dll_reference\0Harmony.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\CharaStudio_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\..\KK_dll_reference\Assembly-CSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\CharaStudio_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>..\..\KK_dll_reference\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="BepInEx">
-      <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\BepInEx\core\BepInEx.dll</HintPath>
+      <HintPath>..\..\KK_dll_reference\BepInEx.dll</HintPath>
     </Reference>
     <Reference Include="KKAPI">
-      <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\BepInEx\plugins\KKAPI.dll</HintPath>
+      <HintPath>..\..\KK_dll_reference\KKAPI.dll</HintPath>
     </Reference>
     <Reference Include="System">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\CharaStudio_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\..\KK_dll_reference\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\CharaStudio_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\..\KK_dll_reference\UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Vectrosity">
-      <HintPath>D:\WangBackup\[Game]\[ill]Koikatu\[ScrewThisNoise] Koikatsu BetterRepack RX4.1\CharaStudio_Data\Managed\Vectrosity.dll</HintPath>
+      <HintPath>..\..\KK_dll_reference\Vectrosity.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
