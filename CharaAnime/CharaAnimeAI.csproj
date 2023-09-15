@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CharaAnime</RootNamespace>
     <AssemblyName>CharaAnime</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -49,9 +49,13 @@
       <HintPath>..\..\AI-Syoujyo\BepInEx\plugins\AI_BepisPlugins\AI_ConfigurationManager.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="AI_Heelz, Version=1.13.0.0, Culture=neutral, PublicKeyToken=b9198fe57b1647e6, processorArchitecture=MSIL">
+    <Reference Include="AI_Heelz_%281.14.3 hooh%29, Version=1.14.3.0, Culture=neutral, PublicKeyToken=b9198fe57b1647e6, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Debug\AI_Heelz.dll</HintPath>
+      <HintPath>Lib\AI_Heelz_(1.14.3 hooh).dll</HintPath>
+    </Reference>
+    <Reference Include="AI_Heelz_%281.15.4 Animal42069%29, Version=1.15.4.0, Culture=neutral, PublicKeyToken=b9198fe57b1647e6, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\AI_Heelz_(1.15.4 Animal42069).dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -95,21 +99,23 @@
     <Compile Include="Core\CharaAnimeMgr.cs" />
     <Compile Include="Core\CharaPoseController.cs" />
     <Compile Include="Core\MemoryInfo.cs" />
+    <Compile Include="Core\MmddUtility.cs" />
     <Compile Include="GUI\Gizmos.cs" />
     <Compile Include="GUI\MainGUI.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="0Harmony.dll" />
-    <Content Include="AIAPI.dll" />
-    <Content Include="AI_ConfigurationManager.dll" />
-    <Content Include="AI_Heelz.dll" />
-    <Content Include="Assembly-CSharp-firstpass.dll" />
-    <Content Include="Assembly-CSharp.dll" />
-    <Content Include="BepInEx.dll" />
-    <Content Include="UnityEngine.CoreModule.dll" />
-    <Content Include="UnityEngine.dll" />
-    <Content Include="UnityEngine.IMGUIModule.dll" />
+    <Content Include="Lib\0Harmony.dll" />
+    <Content Include="Lib\AIAPI.dll" />
+    <Content Include="Lib\AI_ConfigurationManager.dll" />
+    <Content Include="Lib\AI_Heelz_%281.14.3 hooh%29.dll" />
+    <Content Include="Lib\AI_Heelz_%281.15.4 Animal42069%29.dll" />
+    <Content Include="Lib\Assembly-CSharp-firstpass.dll" />
+    <Content Include="Lib\Assembly-CSharp.dll" />
+    <Content Include="Lib\BepInEx.dll" />
+    <Content Include="Lib\UnityEngine.CoreModule.dll" />
+    <Content Include="Lib\UnityEngine.dll" />
+    <Content Include="Lib\UnityEngine.IMGUIModule.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

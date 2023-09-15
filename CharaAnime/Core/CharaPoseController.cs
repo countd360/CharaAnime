@@ -33,7 +33,6 @@ namespace CharaAnime
         public Dictionary<GameObject, Vector3> BoneSclModifier;
         public List<SyncSetting> BoneSync;
 
-#if STUDIO_HS2 || STUDIO_AI
         // heelz 
         public enum HeelzPluginType
         {
@@ -44,16 +43,20 @@ namespace CharaAnime
             NOTFOUND,
         }
 
-        public static bool HasHeelzPlugin { get; private set; }
-        public static string HeelzPluginInfo { get; private set; }
-        private static HeelzPluginType heelzPluginType = HeelzPluginType.UNKNOWN;
-        public bool EnableHeelzUpdate { get; set; }
-        public object heelsCtrl;
+        // new heelz plugin name
+#if STUDIO_HS2
+        readonly static string NEW_HEELZ_PLUGIN_NAME = "HS2Heelz";
+#elif STUDIO_AI
+        readonly static string NEW_HEELZ_PLUGIN_NAME = "AIHeelz";
+#endif
 
-        public static void Foo()
-        {
-            Console.WriteLine("Foo10");
-        }
+        public static bool HasHeelzPlugin { get; private set; } = false;
+        public static string HeelzPluginInfo { get; private set; } = null;
+        private static HeelzPluginType heelzPluginType = HeelzPluginType.UNKNOWN;
+        public bool EnableHeelzUpdate { get; set; } = false;
+        public object heelsCtrl = null;
+
+#if STUDIO_HS2 || STUDIO_AI
 
         public static void DetectHeelzController()
         {
@@ -91,27 +94,27 @@ namespace CharaAnime
             {
                 if (heelzPluginVer.CompareTo(new Version(1, 14, 3)) == 0)
                 {
-                    PatchHeelz14();
-
                     HasHeelzPlugin = true;
-                    HeelzPluginInfo = "Found supported plugin: Heelz 1.14.3 by Hooh";
+                    HeelzPluginInfo = "Supported plugin: Heelz 1.14.3 by Hooh";
                     heelzPluginType = HeelzPluginType.HEELZ_14;
+                    PatchHeelz14();
                     return;
                 }
             }
-            else if (heelzPluginName.Equals("HS2Heelz"))
+            else if (heelzPluginName.Equals(NEW_HEELZ_PLUGIN_NAME))
             {
                 if (heelzPluginVer.CompareTo(new Version(1, 15, 3)) >= 0)
                 {
                     HasHeelzPlugin = true;
-                    HeelzPluginInfo = string.Format("Found supported plugin: Heelz {0} by Animal42069", heelzPluginVer.ToString());
+                    HeelzPluginInfo = string.Format("Supported plugin: Heelz {0} by Animal42069", heelzPluginVer.ToString());
                     heelzPluginType = HeelzPluginType.HEELZ_15;
+                    PatchHeelz15();
                     return;
                 }
             }
             // not supported
             HasHeelzPlugin = false;
-            HeelzPluginInfo = string.Format("Found not-supported plugin: Name = {0}, GUID = {1}, Version = {2}", heelzPluginName, heelzPluginGuid, heelzPluginVer.ToString());
+            HeelzPluginInfo = string.Format("Not-supported plugin: Name = {0}, GUID = {1}, Version = {2}", heelzPluginName, heelzPluginGuid, heelzPluginVer.ToString());
             heelzPluginType = HeelzPluginType.UNSUPPORT;
         }
 
@@ -120,8 +123,24 @@ namespace CharaAnime
             try
             {
                 // install patch
-                Console.WriteLine("Patching Heelz 1.14.3 ...");
+                Console.WriteLine("Patching {0} ...", HeelzPluginInfo);
                 CharaAnimeMgr.HarmonyInstance.PatchAll(typeof(Heelz14_Patch));
+                Console.WriteLine("  ... Done.");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Fail to patch Heelz: " + ex.Message);
+            }
+
+        }
+
+        public static void PatchHeelz15()
+        {
+            try
+            {
+                // install patch
+                Console.WriteLine("Patching {0} ...", HeelzPluginInfo);
+                CharaAnimeMgr.HarmonyInstance.PatchAll(typeof(Heelz15_Patch));
                 Console.WriteLine("  ... Done.");
             }
             catch (Exception ex)
@@ -142,7 +161,7 @@ namespace CharaAnime
             }
             else if (heelzPluginType == HeelzPluginType.HEELZ_15)
             {
-                EnableHeelzUpdate = false;
+                EnableHeelzUpdate = InitializeHeelzController15();
             }
             else
             {
@@ -164,6 +183,50 @@ namespace CharaAnime
             return heelsCtrl != null;
         }
 
+        public bool InitializeHeelzController15()
+        {
+            try
+            {
+                Heelz15_Patch.caMgr = CharaAnimeMgr.Instance;
+                var hctrl = (ociTarget as OCIChar).charInfo.gameObject.GetComponent<Heels.Controller.HeelsController>();
+                heelsCtrl = hctrl.Handler;
+                //heelsCtrl = (ociTarget as OCIChar).charInfo.gameObject.GetComponent<Heels.Controller.HeelsController>();
+            }
+            catch (Exception)
+            {
+                heelsCtrl = null;
+            }
+            return heelsCtrl != null;
+        }
+
+        //public void HeelzEnable(bool enable)
+        //{
+        //    if (heelzPluginType == HeelzPluginType.HEELZ_14)
+        //    {
+        //        EnableHeelzUpdate = HeelzEnable14(enable);
+        //    }
+        //    else if (heelzPluginType == HeelzPluginType.HEELZ_15)
+        //    {
+        //        EnableHeelzUpdate = HeelzEnable15(enable);
+        //    }
+        //    else
+        //    {
+        //        EnableHeelzUpdate = false;
+        //    }
+        //}
+
+        //private bool HeelzEnable14(bool enable)
+        //{
+        //    if (heelsCtrl != null)
+        //    {
+        //        return enable;
+        //    }
+        //    else
+        //    {
+        //        return false;
+        //    }
+        //}
+
         public void HeelzUpdate()
         {
             if (heelzPluginType == HeelzPluginType.HEELZ_14)
@@ -172,11 +235,11 @@ namespace CharaAnime
             }
             else if (heelzPluginType == HeelzPluginType.HEELZ_15)
             {
-
+                HeelzUpdate15();
             }
             else
             {
-
+                ;
             }
         }
 
@@ -188,6 +251,30 @@ namespace CharaAnime
                 (heelsCtrl as HeelsController)?.IKArray();
                 Heelz14_Patch.allowHeelzUpdate = false;
             }
+        }
+
+        public void HeelzUpdate15()
+        {
+            if (EnableHeelzUpdate && heelsCtrl != null)
+            {
+                Heelz15_Patch.allowHeelzUpdate = true;
+                (heelsCtrl as Heels.Handler.HeelsHandler)?.UpdateFootAngle();
+                Heelz15_Patch.allowHeelzUpdate = false;
+            }
+            //if (heelsCtrl != null)
+            //{
+            //    Heels.Controller.HeelsController hc = (Heels.Controller.HeelsController)heelsCtrl;
+            //    if (EnableHeelzUpdate)
+            //    {
+            //        hc.Handler.IsActive = true;
+            //        hc.Handler.UpdateFootAngle();
+            //        hc.Handler.IsActive = false;
+            //    }
+            //    else
+            //    {
+            //        hc.Handler.IsActive = false;
+            //    }
+            //}
         }
 
         // heelz patch
@@ -212,6 +299,30 @@ namespace CharaAnime
                 //Console.WriteLine("IKArray of HeelsController called");
                 return true;
             }
+        }
+
+        private class Heelz15_Patch
+        {
+            public static bool allowHeelzUpdate = false;
+            public static CharaAnimeMgr caMgr;
+
+            [HarmonyPatch(typeof(Heels.Handler.HeelsHandler), "UpdateFootAngle")]
+            [HarmonyPrefix]
+            public static bool Prefix(Heels.Handler.HeelsHandler __instance)
+            {
+                foreach (CharaPoseController pc in caMgr.ociPoseCtrlDic.Values)
+                {
+                    if (pc.heelsCtrl != null && pc.heelsCtrl.Equals(__instance))
+                    {
+                        // this char has CharPoseController for it, depend on allowHeelzUpdate flag 
+                        return allowHeelzUpdate && pc.EnableHeelzUpdate;
+                    }
+                }
+
+                //Console.WriteLine("IKArray of HeelsController called");
+                return true;
+            }
+
         }
 
 #endif

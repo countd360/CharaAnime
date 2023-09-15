@@ -22,6 +22,7 @@
     <DefineConstants>TRACE;DEBUG;STUDIO_KK</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\CharaAnime\Core\CCDIKSolver.cs">
@@ -44,6 +46,9 @@
     <Compile Include="..\CharaAnime\Core\MemoryInfo.cs">
       <Link>Core\MemoryInfo.cs</Link>
     </Compile>
+    <Compile Include="..\CharaAnime\Core\MmddUtility.cs">
+      <Link>Core\MmddUtility.cs</Link>
+    </Compile>
     <Compile Include="..\CharaAnime\GUI\Gizmos.cs">
       <Link>GUI\Gizmos.cs</Link>
     </Compile>
@@ -54,35 +59,45 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\KK_dll_reference\0Harmony.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\0Harmony.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\KK_dll_reference\Assembly-CSharp.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>..\..\KK_dll_reference\Assembly-CSharp-firstpass.dll</HintPath>
+    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
-    <Reference Include="BepInEx">
-      <HintPath>..\..\KK_dll_reference\BepInEx.dll</HintPath>
+    <Reference Include="BepInEx, Version=5.4.21.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\BepInEx.dll</HintPath>
     </Reference>
-    <Reference Include="KKAPI">
-      <HintPath>..\..\KK_dll_reference\KKAPI.dll</HintPath>
+    <Reference Include="KKAPI, Version=1.35.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\KKAPI.dll</HintPath>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
     </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\..\KK_dll_reference\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI">
-      <HintPath>..\..\KK_dll_reference\UnityEngine.UI.dll</HintPath>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Lib\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="Vectrosity">
-      <HintPath>..\..\KK_dll_reference\Vectrosity.dll</HintPath>
+      <HintPath>Lib\Vectrosity.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Lib\0Harmony.dll" />
+    <Content Include="Lib\Assembly-CSharp-firstpass.dll" />
+    <Content Include="Lib\Assembly-CSharp.dll" />
+    <Content Include="Lib\BepInEx.dll" />
+    <Content Include="Lib\KKAPI.dll" />
+    <Content Include="Lib\UnityEngine.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
