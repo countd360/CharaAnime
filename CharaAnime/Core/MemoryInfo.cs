@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace CharaAnime
@@ -8,6 +9,89 @@ namespace CharaAnime
     /// </summary>
     static class MemoryInfo
     {
+        public static string LibPath = System.Environment.CurrentDirectory + @"\BepInEx\plugins\monoPatcher.dll";
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        public static extern IntPtr LoadLibrary(string path);
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        public static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
+        public static Delegate LoadFunction<T>(string dllPath, string functionName)
+        {
+            //Console.WriteLine("LoadFunction start: from " + dllPath + " get " + functionName);
+            IntPtr hModule = LoadLibrary(dllPath);
+            if (hModule == IntPtr.Zero)
+            {
+                int lasterror = Marshal.GetLastWin32Error();
+                Console.WriteLine("LoadLibrary report error: " + lasterror);
+                throw new Win32Exception(lasterror);
+            }
+
+            IntPtr functionAddress = GetProcAddress(hModule, functionName);
+            if (functionAddress == IntPtr.Zero)
+            {
+                int lasterror = Marshal.GetLastWin32Error();
+                Console.WriteLine("GetProcAddress report error: " + lasterror);
+                throw new Win32Exception(lasterror);
+            }
+
+            return Marshal.GetDelegateForFunctionPointer(functionAddress, typeof(T));
+        }
+
+        public delegate bool GcInitType();
+        public static GcInitType GcInit;
+
+        public delegate bool GcSetStatusType(bool bEnable);
+        public static GcSetStatusType GcSetStatus;
+
+        public static bool GcOpInit()
+        {
+            //Console.WriteLine("GcOpInit step0: Check monoPatcher.dll");
+            if (!System.IO.File.Exists(LibPath))
+            {
+                Console.WriteLine("gcOpInit failed: {0} not existed!", LibPath);
+                return false;
+            }
+
+            //Console.WriteLine("GcOpInit step1: LoadLibrary(LibPath)");
+            if (LoadLibrary(LibPath) == IntPtr.Zero)
+            {
+                Console.WriteLine("gcOpInit failed: LoadLibrary " + LibPath);
+                return false;
+            }
+
+            //Console.WriteLine("GcOpInit step2: LoadFunction<GcInitType>");
+            GcInit = (GcInitType)LoadFunction<GcInitType>(LibPath, "monoPatchInit");
+            if (GcInit == null)
+            {
+                Console.WriteLine("gcOpInit failed: LoadFunction monoPatchInit");
+                return false;
+            }
+
+            //Console.WriteLine("GcOpInit step3: LoadFunction<GcSetStatusType>");
+            GcSetStatus = (GcSetStatusType)LoadFunction<GcSetStatusType>(LibPath, "monoSetGCStatus");
+            if (GcSetStatus == null)
+            {
+                Console.WriteLine("gcOpInit failed: LoadFunction monoSetGCStatus");
+                return false;
+            }
+
+            //Console.WriteLine("GcOpInit step4: calling GcInit()");
+            return GcInit();
+        }
+
+        public static bool GcSetStatusX(bool bEnable)
+        {
+            if (GcSetStatus != null)
+            {
+                return GcSetStatus(bEnable);
+            }
+
+            return false;
+        }
+
+
         private static readonly IntPtr _currentProcessHandle = GetCurrentProcess();
         private static readonly MEMORYSTATUSEX _memorystatusex = new MEMORYSTATUSEX();
         private static readonly PROCESS_MEMORY_COUNTERS _memoryCounters = new PROCESS_MEMORY_COUNTERS();

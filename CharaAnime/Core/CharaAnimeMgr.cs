@@ -10,7 +10,7 @@ namespace CharaAnime
     class CharaAnimeMgr : MonoBehaviour
     {
         public MainGUI gui;
-        public Dictionary<ObjectCtrlInfo, CharaPoseController> ociPoseCtrlDic;
+        public Dictionary<ObjectCtrlInfo, MmddPoseController> ociPoseCtrlDic;
 
         public static Harmony HarmonyInstance { get; set; }
         public static CharaAnimeMgr Instance { get; private set; }
@@ -32,7 +32,7 @@ namespace CharaAnime
 
         private void Awake()
         {
-            ociPoseCtrlDic = new Dictionary<ObjectCtrlInfo, CharaPoseController>();
+            ociPoseCtrlDic = new Dictionary<ObjectCtrlInfo, MmddPoseController>();
         }
 
         private void Start()
@@ -55,7 +55,7 @@ namespace CharaAnime
             System.Console.WriteLine("CharaAnime CharaAnimeMgr Started.");
         }
 
-        public void RegistPoseController(ObjectCtrlInfo target, CharaPoseController poseCtrl)
+        public void RegistPoseController(ObjectCtrlInfo target, MmddPoseController poseCtrl)
         {
             ociPoseCtrlDic[target] = poseCtrl;
         }
@@ -65,7 +65,7 @@ namespace CharaAnime
             ociPoseCtrlDic.Remove(target);
         }
 
-        public CharaPoseController GetPoseController(ObjectCtrlInfo target)
+        public MmddPoseController GetPoseController(ObjectCtrlInfo target)
         {
             if (target == null) return null;
 
@@ -75,7 +75,7 @@ namespace CharaAnime
             }
             else
             {
-                return CharaPoseController.Install(target.guideObject.transformTarget.gameObject, target);
+                return MmddPoseController.Install(target.guideObject.transformTarget.gameObject, target);
             }
         }
     }

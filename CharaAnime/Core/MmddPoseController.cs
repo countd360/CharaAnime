@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace CharaAnime
 {
-    public class CharaPoseController : MonoBehaviour
+    public class MmddPoseController : MonoBehaviour
     {
         private ObjectCtrlInfo ociTarget;
         private CharaAnimeMgr manager;
@@ -39,6 +39,7 @@ namespace CharaAnime
             UNKNOWN = 0,
             HEELZ_14,
             HEELZ_15,
+            STILETTO,
             UNSUPPORT,
             NOTFOUND,
         }
@@ -69,7 +70,7 @@ namespace CharaAnime
             string heelzPluginName = null;
             string heelzPluginGuid = null;
             Version heelzPluginVer = null;
-            Console.WriteLine("CharaPoseController search for heelz plugins...");
+            Console.WriteLine("MmddPoseController search for heelz plugins...");
             foreach (var pname in Chainloader.PluginInfos.Keys)
             {
                 if (pname.ToLower().Contains("heelz") || Chainloader.PluginInfos[pname].Metadata.Name.Contains("heelz"))
@@ -287,7 +288,7 @@ namespace CharaAnime
             [HarmonyPrefix]
             public static bool Prefix(HeelsController __instance)
             {
-                foreach (CharaPoseController pc in caMgr.ociPoseCtrlDic.Values)
+                foreach (MmddPoseController pc in caMgr.ociPoseCtrlDic.Values)
                 {
                     if (pc.heelsCtrl != null && pc.heelsCtrl.Equals(__instance))
                     {
@@ -310,7 +311,7 @@ namespace CharaAnime
             [HarmonyPrefix]
             public static bool Prefix(Heels.Handler.HeelsHandler __instance)
             {
-                foreach (CharaPoseController pc in caMgr.ociPoseCtrlDic.Values)
+                foreach (MmddPoseController pc in caMgr.ociPoseCtrlDic.Values)
                 {
                     if (pc.heelsCtrl != null && pc.heelsCtrl.Equals(__instance))
                     {
@@ -325,19 +326,164 @@ namespace CharaAnime
 
         }
 
+#elif STUDIO_KK || STUDIO_KKS
+        public static void DetectHeelzController()
+        {
+            // init only once
+            if (heelzPluginType != HeelzPluginType.UNKNOWN)
+            {
+                return;
+            }
+            // search for 
+            string heelzPluginName = null;
+            string heelzPluginGuid = null;
+            Version heelzPluginVer = null;
+            Console.WriteLine("Searching for heelz plugins...");
+            foreach (var pname in Chainloader.PluginInfos.Keys)
+            {
+                if (pname.ToLower().Contains("stiletto") || Chainloader.PluginInfos[pname].Metadata.Name.ToLower().Contains("stiletto"))
+                {
+                    var pinfo = Chainloader.PluginInfos[pname];
+                    heelzPluginName = pinfo.Metadata.Name;
+                    heelzPluginGuid = pinfo.Metadata.GUID;
+                    heelzPluginVer = pinfo.Metadata.Version;
+                    break;
+                }
+            }
+            // check version
+            if (string.IsNullOrEmpty(heelzPluginName) || heelzPluginVer == null)
+            {
+                HasHeelzPlugin = false;
+                HeelzPluginInfo = "Heelz Plugin not found";
+                heelzPluginType = HeelzPluginType.NOTFOUND;
+            }
+            else if(heelzPluginGuid.Equals("com.essu.stiletto"))
+            {
+                HasHeelzPlugin = true;
+                HeelzPluginInfo = string.Format("Supported plugin: Stiletto {0} by essu", heelzPluginVer.ToString());
+                heelzPluginType = HeelzPluginType.STILETTO;
+            }
+            else if (heelzPluginGuid.Equals("com.essu.stiletto.custom"))
+            {
+                HasHeelzPlugin = true;
+                HeelzPluginInfo = string.Format("Supported plugin: Stiletto {0} by essu & Feedfinger", heelzPluginVer.ToString());
+                heelzPluginType = HeelzPluginType.STILETTO;
+            }
+            else if (heelzPluginGuid.Equals("JiarongGu.HighHeelPlugin.Modified"))
+            {
+                HasHeelzPlugin = true;
+                HeelzPluginInfo = string.Format("Supported plugin: Stiletto {0} by essu & JiarongGu", heelzPluginVer.ToString());
+                heelzPluginType = HeelzPluginType.STILETTO;
+            }
+            else
+            {
+                // not supported
+                HasHeelzPlugin = false;
+                HeelzPluginInfo = string.Format("Not-supported plugin: Name = {0}, GUID = {1}, Version = {2}", heelzPluginName, heelzPluginGuid, heelzPluginVer.ToString());
+                heelzPluginType = HeelzPluginType.UNSUPPORT;
+            }
+            Console.WriteLine("  {0}\n", HeelzPluginInfo);
+        }
+
+        public void InitializeHeelzController()
+        {
+            DetectHeelzController();
+            heelsCtrl = null;
+
+            if (heelzPluginType == HeelzPluginType.STILETTO)
+            {
+                EnableHeelzUpdate = InitializeStiletto();
+            }
+            else
+            {
+                EnableHeelzUpdate = false;
+            }
+        }
+
+        public bool InitializeStiletto()
+        {
+            try
+            {
+                Component heelInfo = null;
+                foreach (Component cmp in (ociTarget as OCIChar).charInfo.gameObject.GetComponents(typeof(Component)))
+                {
+                    string cmpTypeName = cmp.GetType().ToString().ToLower();
+                    if (cmpTypeName.Equals("stiletto.heelinfo"))
+                    {
+                        heelInfo = cmp;
+                        break;
+                    }
+                }
+                if (heelInfo == null)
+                {
+                    throw new Exception("Cannot find HeelInfo component");
+                }
+
+                Traverse traHeelInfo = Traverse.Create(heelInfo);
+                if (traHeelInfo == null)
+                {
+                    throw new Exception("Cannot create HeelInfo traverse");
+                }
+
+                Traverse traHeelUpdate = traHeelInfo.Method("PostUpdate", new Type[] { }, null);
+                if (traHeelUpdate.MethodExists())
+                {
+                    heelsCtrl = traHeelUpdate;
+                }
+                else
+                {
+                    throw new Exception("Cannot get PostUpdate method");
+                }
+                //Console.WriteLine("Initialize Stiletto Done");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Initialize Stiletto failed: {0}\n", e.ToString());
+                heelsCtrl = null;
+            }
+            return heelsCtrl != null;
+        }
+
+        public void HeelzUpdate()
+        {
+            if (heelzPluginType == HeelzPluginType.STILETTO)
+            {
+                StilettoUpdate();
+            }
+            else
+            {
+                ;
+            }
+        }
+
+        public void StilettoUpdate()
+        {
+            if (EnableHeelzUpdate && heelsCtrl != null)
+            {
+                try
+                {
+                    (heelsCtrl as Traverse).GetValue();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Fail to update stiletto, auto disabled: {0}\n", e.ToString());
+                    EnableHeelzUpdate = false;
+                }
+            }
+        }
 #endif
 
-        public static CharaPoseController Install(GameObject container, ObjectCtrlInfo target)
+        public static MmddPoseController Install(GameObject container, ObjectCtrlInfo target)
         {
-            CharaPoseController newCtrl = container.AddComponent<CharaPoseController>();
+            MmddPoseController newCtrl = container.AddComponent<MmddPoseController>();
             newCtrl.ociTarget = target;
             newCtrl.manager = CharaAnimeMgr.Instance;
             newCtrl.manager.RegistPoseController(target, newCtrl);
 
-#if STUDIO_HS2 || STUDIO_AI
             // init heelz controller
             newCtrl.InitializeHeelzController();
-#endif
+
+            Console.WriteLine("Installed new pose controller to <{0}>: {1}\n", target.treeNodeObject.textName, newCtrl.ToString());
             return newCtrl;
         }
 
@@ -405,10 +551,7 @@ namespace CharaAnime
 
         public void ClearBoneSyncSetting()
         {
-            if (Initialized)
-            {
-                BoneSync.Clear();
-            }
+            BoneSync.Clear();
         }
 
         private void Awake()
@@ -419,11 +562,12 @@ namespace CharaAnime
             BoneRotModifier = new Dictionary<GameObject, Quaternion>();
             BoneSclModifier = new Dictionary<GameObject, Vector3>();
             BoneSync = new List<SyncSetting>();
+            //Console.WriteLine("MmddPoseController awaken!");
         }
 
         private void Start()
         {
-            Console.WriteLine("CharaPoseController for {0} started!", ociTarget.treeNodeObject.textName);
+            Console.WriteLine("MmddPoseController for {0} started!\n", ociTarget.treeNodeObject.textName);
             Initialized = true;
         }
 
@@ -431,25 +575,21 @@ namespace CharaAnime
         {
             DoBoneSync();
 
-#if STUDIO_HS2 || STUDIO_AI
             // heelz update
             HeelzUpdate();
-#endif
         }
 
         public void ObiUpdate()
         {
             DoBoneSync(true);
 
-#if STUDIO_HS2 || STUDIO_AI
             // heelz update
             HeelzUpdate();
-#endif
         }
 
         private void OnDestroy()
         {
-            Console.WriteLine("CharaPoseController for {0} destroyed!", ociTarget.treeNodeObject.textName);
+            Console.WriteLine("MmddPoseController for {0} destroyed!\n", ociTarget.treeNodeObject.textName);
             Initialized = false;
             Enable = false;
             manager.RemovePoseController(ociTarget);

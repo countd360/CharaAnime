@@ -75,11 +75,11 @@
     <Compile Include="..\CharaAnime\Core\CharaAnimeMgr.cs">
       <Link>Core\CharaAnimeMgr.cs</Link>
     </Compile>
-    <Compile Include="..\CharaAnime\Core\CharaPoseController.cs">
-      <Link>Core\CharaPoseController.cs</Link>
-    </Compile>
     <Compile Include="..\CharaAnime\Core\MemoryInfo.cs">
       <Link>Core\MemoryInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\CharaAnime\Core\MmddPoseController.cs">
+      <Link>Core\MmddPoseController.cs</Link>
     </Compile>
     <Compile Include="..\CharaAnime\Core\MmddUtility.cs">
       <Link>Core\MmddUtility.cs</Link>

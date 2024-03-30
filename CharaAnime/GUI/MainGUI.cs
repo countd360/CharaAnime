@@ -99,7 +99,7 @@ namespace CharaAnime
                 GUI.enabled = true;
                 
                 GUILayout.BeginVertical();
-                CharaPoseController cpc = CharaAnimeMgr.Instance.GetPoseController(target);
+                MmddPoseController cpc = CharaAnimeMgr.Instance.GetPoseController(target);
                 if (target == null || cpc == null)
                 {
                     if (lastSelectedTreeNode != null || target != null) OnSelectChange(null);
@@ -135,10 +135,10 @@ namespace CharaAnime
 
             if (target != null)
             {
-                CharaPoseController cpc = target.guideObject.transformTarget.gameObject.GetComponent<CharaPoseController>();
+                MmddPoseController cpc = target.guideObject.transformTarget.gameObject.GetComponent<MmddPoseController>();
                 if (cpc == null)
                 {
-                    cpc = CharaPoseController.Install(target.guideObject.transformTarget.gameObject, target);
+                    cpc = MmddPoseController.Install(target.guideObject.transformTarget.gameObject, target);
                 }
             }
 

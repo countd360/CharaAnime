@@ -97,7 +97,7 @@
     <Compile Include="CharaAnime.cs" />
     <Compile Include="Core\CCDIKSolver.cs" />
     <Compile Include="Core\CharaAnimeMgr.cs" />
-    <Compile Include="Core\CharaPoseController.cs" />
+    <Compile Include="Core\MmddPoseController.cs" />
     <Compile Include="Core\MemoryInfo.cs" />
     <Compile Include="Core\MmddUtility.cs" />
     <Compile Include="GUI\Gizmos.cs" />
