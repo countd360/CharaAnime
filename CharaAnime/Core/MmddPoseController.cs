@@ -483,7 +483,7 @@ namespace CharaAnime
             // init heelz controller
             newCtrl.InitializeHeelzController();
 
-            Console.WriteLine("Installed new pose controller to <{0}>: {1}\n", target.treeNodeObject.textName, newCtrl.ToString());
+            Console.WriteLine("Installed new MmddPoseController to <{0}>\n", target.treeNodeObject.textName);
             return newCtrl;
         }
 
@@ -567,7 +567,7 @@ namespace CharaAnime
 
         private void Start()
         {
-            Console.WriteLine("MmddPoseController for {0} started!\n", ociTarget.treeNodeObject.textName);
+            Console.WriteLine("MmddPoseController for <{0}> started!\n", ociTarget.treeNodeObject.textName);
             Initialized = true;
         }
 
@@ -589,10 +589,7 @@ namespace CharaAnime
 
         private void OnDestroy()
         {
-            Console.WriteLine("MmddPoseController for {0} destroyed!\n", ociTarget.treeNodeObject.textName);
-            Initialized = false;
-            Enable = false;
-            manager.RemovePoseController(ociTarget);
+            Console.WriteLine("MmddPoseController for <{0}> destroyed!\n", ociTarget.treeNodeObject.textName);
         }
 
         public Action PostBoneSync = null;

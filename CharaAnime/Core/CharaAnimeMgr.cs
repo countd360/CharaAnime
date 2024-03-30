@@ -62,7 +62,12 @@ namespace CharaAnime
 
         public void RemovePoseController(ObjectCtrlInfo target)
         {
-            ociPoseCtrlDic.Remove(target);
+            if (ociPoseCtrlDic.ContainsKey(target))
+            {
+                MmddPoseController ctrl = ociPoseCtrlDic[target];
+                ociPoseCtrlDic.Remove(target);
+                Destroy(ctrl);
+            }
         }
 
         public MmddPoseController GetPoseController(ObjectCtrlInfo target)
